@@ -1,0 +1,12 @@
+{
+  "name": "Standard",
+  "sites": [
+    "https://wikipedia.com",
+    "https://en.wikibooks.org/wiki/Main_Page",
+    "https://de.wikipedia.org/wiki/Drachenlord"
+  ],
+  "intervalMs": 10000,
+  "inactivityMs": 15000,
+  "reloadPolicy": "cache",
+  "countdownEnabled": true
+}

@@ -1,0 +1,33 @@
+{
+  "settings": "Settings",
+  "playlist": "Playlist",
+  "delete": "Delete",
+  "create": "Create",
+  "newPlaylistPlaceholder": "New playlist (e.g. Office)",
+  "rotationSeconds": "Rotation time (seconds)",
+  "inactivitySeconds": "Auto-resume after inactivity (seconds)",
+  "reloadPolicy": "Load behavior on switch",
+  "reloadCache": "Cached (faster, fewer reloads)",
+  "reloadAlways": "Reload every time",
+  "apply": "Apply",
+  "addUrl": "Add website URL",
+  "add": "Add",
+  "tipIframe": "Tip: The website must allow embedding in an iFrame.",
+  "listOfSites": "List of Websites",
+  "nowSwitch": "Switch now",
+  "clearAll": "Delete all",
+  "logs": "Logs",
+  "languageLabel": "Sprache / Language",
+  "countdownLabel": "Show countdown before switching",
+  "openSettings": "Open settings",
+  "resumeRotation": "Resume rotation",
+  "prev": "Previous page",
+  "next": "Next page",
+  "alertInvalidUrl": "Please enter a valid URL (e.g. https://example.com).",
+  "alertInitFail": "Failed to load playlists.",
+  "alertCreateFail": "Could not create playlist (maybe already exists?).",
+  "alertDeleteFail": "Could not delete playlist.",
+  "confirmDeleteAll": "Delete all websites?"
+}
+
+

@@ -1,0 +1,33 @@
+{
+  "settings": "Ayarlar",
+  "playlist": "Oynatma listesi",
+  "delete": "Sil",
+  "create": "Oluştur",
+  "newPlaylistPlaceholder": "Yeni liste (örn. Ofis)",
+  "rotationSeconds": "Döngü süresi (saniye)",
+  "inactivitySeconds": "Hareketsizlikten sonra devam (saniye)",
+  "reloadPolicy": "Geçişte yükleme davranışı",
+  "reloadCache": "Önbellekten (daha hızlı, daha az yenileme)",
+  "reloadAlways": "Her seferinde yeniden yükle",
+  "apply": "Uygula",
+  "addUrl": "Web sitesi URL’si ekle",
+  "add": "Ekle",
+  "tipIframe": "İpucu: Site iFrame’e izin vermelidir.",
+  "listOfSites": "Web sitesi listesi",
+  "nowSwitch": "Şimdi değiştir",
+  "clearAll": "Tümünü sil",
+  "logs": "Günlükler",
+  "languageLabel": "Sprache / Language",
+  "countdownLabel": "Geçişten önce geri sayımı göster",
+  "openSettings": "Ayarları aç",
+  "resumeRotation": "Döngüye devam et",
+  "prev": "Önceki sayfa",
+  "next": "Sonraki sayfa",
+  "alertInvalidUrl": "Geçerli bir URL girin (örn. https://example.com).",
+  "alertInitFail": "Listeler yüklenemedi.",
+  "alertCreateFail": "Liste oluşturulamadı (zaten var olabilir).",
+  "alertDeleteFail": "Liste silinemedi.",
+  "confirmDeleteAll": "Tüm web siteleri silinsin mi?"
+}
+
+

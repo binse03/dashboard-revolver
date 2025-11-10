@@ -1,0 +1,33 @@
+{
+  "settings": "Instellingen",
+  "playlist": "Afspeellijst",
+  "delete": "Verwijderen",
+  "create": "Maken",
+  "newPlaylistPlaceholder": "Nieuwe afspeellijst (bijv. Kantoor)",
+  "rotationSeconds": "Rotatietijd (seconden)",
+  "inactivitySeconds": "Hervatten na inactiviteit (seconden)",
+  "reloadPolicy": "Gedrag bij wisselen",
+  "reloadCache": "In cache (sneller, minder herlaad)",
+  "reloadAlways": "Elke keer herladen",
+  "apply": "Toepassen",
+  "addUrl": "Website-URL toevoegen",
+  "add": "Toevoegen",
+  "tipIframe": "Tip: De website moet iFrame toestaan.",
+  "listOfSites": "Lijst met websites",
+  "nowSwitch": "Nu wisselen",
+  "clearAll": "Alles verwijderen",
+  "logs": "Logs",
+  "languageLabel": "Sprache / Language",
+  "countdownLabel": "Aftellen tonen vóór het wisselen",
+  "openSettings": "Instellingen openen",
+  "resumeRotation": "Rotatie hervatten",
+  "prev": "Vorige pagina",
+  "next": "Volgende pagina",
+  "alertInvalidUrl": "Voer een geldige URL in (bijv. https://example.com).",
+  "alertInitFail": "Afspeellijsten laden mislukt.",
+  "alertCreateFail": "Afspeellijst maken mislukt (bestaat misschien al?).",
+  "alertDeleteFail": "Afspeellijst verwijderen mislukt.",
+  "confirmDeleteAll": "Alle websites verwijderen?"
+}
+
+

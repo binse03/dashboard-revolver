@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="de">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Dashboard Revolver</title>
+	<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+	<div id="app">
+		<iframe id="viewport" title="Dashboard Viewport" referrerpolicy="no-referrer"></iframe>
+	</div>
+
+	<!-- Floating Settings Button (appears on movement) -->
+	<button id="settings-button" aria-label="Einstellungen öffnen" title="Einstellungen">⚙️</button>
+	<button id="pause-indicator" aria-label="Rotation fortsetzen" title="Rotation fortsetzen">⏸</button>
+	<button id="countdown-indicator" aria-hidden="true" title="Nächster Wechsel">5</button>
+
+	<!-- Left/Right navigation arrows (appear on movement) -->
+	<button id="arrow-left" aria-label="Vorherige Seite" title="Vorherige Seite">◀</button>
+	<button id="arrow-right" aria-label="Nächste Seite" title="Nächste Seite">▶</button>
+
+	<!-- Settings Modal (top-right) -->
+	<div id="settings-modal" aria-hidden="true">
+		<div class="modal-top">
+			<div class="logo">Dashboard Revolver <span class="version">v.1.0.0</span></div>
+			<button id="open-logs" class="ghost" title="Logs anzeigen">Logs</button>
+		</div>
+		<div class="modal-header">
+			<button id="close-modal" aria-label="Schließen">✕</button>
+			<h2>Einstellungen</h2>
+		</div>
+		<div class="modal-section">
+			<h3>Playlist</h3>
+			<div class="row">
+				<select id="playlist-select" title="Playlist auswählen"></select>
+				<button id="delete-playlist" class="danger" title="Playlist löschen">Löschen</button>
+			</div>
+			<div class="row" style="margin-top:8px">
+				<input id="new-playlist-name" type="text" placeholder="Neue Playlist (z.B. Office)">
+				<button id="create-playlist">Erstellen</button>
+			</div>
+		</div>
+		<hr>
+		<div class="modal-section">
+			<label for="interval-seconds">Rotationszeit (Sekunden)</label>
+			<input id="interval-seconds" type="number" min="5" step="5" value="30">
+			<div class="stacked-actions">
+				<button id="apply-interval">Übernehmen</button>
+			</div>
+		</div>
+		<div class="modal-section">
+			<label for="inactivity-seconds">Auto-Fortsetzen nach Inaktivität (Sekunden)</label>
+			<input id="inactivity-seconds" type="number" min="5" step="5" value="15">
+			<div class="stacked-actions">
+				<button id="apply-inactivity">Übernehmen</button>
+			</div>
+		</div>
+		<div class="modal-section">
+			<label for="language-select">Sprache / Language</label>
+			<select id="language-select">
+				<option value="de">Deutsch</option>
+				<option value="en">English</option>
+				<option value="es">Español</option>
+				<option value="fr">Français</option>
+				<option value="it">Italiano</option>
+				<option value="pt">Português</option>
+				<option value="nl">Nederlands</option>
+				<option value="tr">Türkçe</option>
+				<option value="pl">Polski</option>
+			</select>
+			<div class="stacked-actions">
+				<button id="apply-language">Übernehmen</button>
+			</div>
+		</div>
+		<div class="modal-section">
+			<label for="reload-policy">Ladeverhalten beim Wechsel</label>
+			<select id="reload-policy">
+				<option value="cache">Zwischengespeichert (schneller, weniger Reloads)</option>
+				<option value="reload">Jedes Mal neu laden</option>
+			</select>
+			<div class="stacked-actions">
+				<button id="apply-reload">Übernehmen</button>
+			</div>
+		</div>
+		<div class="modal-section">
+			<label for="countdown-enabled">Countdown vor Wechsel anzeigen</label>
+			<label class="switch">
+				<input id="countdown-enabled" type="checkbox">
+				<span class="slider round"></span>
+			</label>
+		</div>
+		<hr>
+		<div class="modal-section">
+			<label for="site-url">Website URL hinzufügen</label>
+			<div class="row">
+				<input id="site-url" type="url" placeholder="https://example.com">
+				<button id="add-site">Hinzufügen</button>
+			</div>
+			<p class="hint">Tipp: Die Website muss Einbettung im iFrame erlauben.</p>
+		</div>
+		<div class="modal-section">
+			<h3>Liste der Websites</h3>
+			<ul id="site-list"></ul>
+		</div>
+		<div class="modal-footer">
+			<button id="shuffle-now">Jetzt wechseln</button>
+			<button id="clear-all" class="danger">Alle löschen</button>
+		</div>
+	</div>
+
+	<!-- Logs Modal (centered) -->
+	<div id="logs-modal" aria-hidden="true">
+		<div class="modal-header">
+			<button id="close-logs" aria-label="Schließen">✕</button>
+			<h2>Logs</h2>
+			<div class="grow"></div>
+			<button id="refresh-logs" class="ghost">Aktualisieren</button>
+		</div>
+		<div class="modal-section">
+			<h3>Client Logs</h3>
+			<pre id="client-logs" class="log-box"></pre>
+		</div>
+		<div class="modal-section">
+			<h3>Server Logs</h3>
+			<pre id="server-logs" class="log-box"></pre>
+		</div>
+	</div>
+
+	<script src="/app.js?v=20251110-3" type="module"></script>
+	<noscript>Bitte JavaScript aktivieren.</noscript>
+</body>
+</html>
+
+

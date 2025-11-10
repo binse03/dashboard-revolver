@@ -1,0 +1,33 @@
+{
+  "settings": "Impostazioni",
+  "playlist": "Playlist",
+  "delete": "Elimina",
+  "create": "Crea",
+  "newPlaylistPlaceholder": "Nuova playlist (es. Ufficio)",
+  "rotationSeconds": "Tempo di rotazione (secondi)",
+  "inactivitySeconds": "Riprendi dopo inattività (secondi)",
+  "reloadPolicy": "Comportamento al cambio",
+  "reloadCache": "In cache (più veloce, meno ricariche)",
+  "reloadAlways": "Ricarica ogni volta",
+  "apply": "Applica",
+  "addUrl": "Aggiungi URL del sito",
+  "add": "Aggiungi",
+  "tipIframe": "Suggerimento: il sito deve consentire l’iFrame.",
+  "listOfSites": "Elenco dei siti",
+  "nowSwitch": "Cambia ora",
+  "clearAll": "Elimina tutto",
+  "logs": "Log",
+  "languageLabel": "Sprache / Language",
+  "countdownLabel": "Mostra conto alla rovescia prima del cambio",
+  "openSettings": "Apri impostazioni",
+  "resumeRotation": "Riprendi rotazione",
+  "prev": "Pagina precedente",
+  "next": "Pagina successiva",
+  "alertInvalidUrl": "Inserisci un URL valido (es. https://example.com).",
+  "alertInitFail": "Caricamento playlist non riuscito.",
+  "alertCreateFail": "Impossibile creare la playlist (forse esiste già?).",
+  "alertDeleteFail": "Impossibile eliminare la playlist.",
+  "confirmDeleteAll": "Eliminare tutti i siti?"
+}
+
+

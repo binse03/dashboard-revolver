@@ -1,0 +1,33 @@
+{
+  "settings": "Einstellungen",
+  "playlist": "Playlist",
+  "delete": "Löschen",
+  "create": "Erstellen",
+  "newPlaylistPlaceholder": "Neue Playlist (z.B. Office)",
+  "rotationSeconds": "Rotationszeit (Sekunden)",
+  "inactivitySeconds": "Auto-Fortsetzen nach Inaktivität (Sekunden)",
+  "reloadPolicy": "Ladeverhalten beim Wechsel",
+  "reloadCache": "Zwischengespeichert (schneller, weniger Reloads)",
+  "reloadAlways": "Jedes Mal neu laden",
+  "apply": "Übernehmen",
+  "addUrl": "Website URL hinzufügen",
+  "add": "Hinzufügen",
+  "tipIframe": "Tipp: Die Website muss Einbettung im iFrame erlauben.",
+  "listOfSites": "Liste der Websites",
+  "nowSwitch": "Jetzt wechseln",
+  "clearAll": "Alle löschen",
+  "logs": "Logs",
+  "languageLabel": "Sprache / Language",
+  "countdownLabel": "Countdown vor Wechsel anzeigen",
+  "openSettings": "Einstellungen öffnen",
+  "resumeRotation": "Rotation fortsetzen",
+  "prev": "Vorherige Seite",
+  "next": "Nächste Seite",
+  "alertInvalidUrl": "Bitte eine gültige URL eingeben (z.B. https://example.com).",
+  "alertInitFail": "Fehler beim Laden der Playlists.",
+  "alertCreateFail": "Playlist konnte nicht erstellt werden (existiert evtl. schon?).",
+  "alertDeleteFail": "Playlist konnte nicht gelöscht werden.",
+  "confirmDeleteAll": "Alle Websites löschen?"
+}
+
+

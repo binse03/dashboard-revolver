@@ -1,0 +1,33 @@
+{
+  "settings": "Ajustes",
+  "playlist": "Lista",
+  "delete": "Eliminar",
+  "create": "Crear",
+  "newPlaylistPlaceholder": "Nueva lista (p. ej. Oficina)",
+  "rotationSeconds": "Tiempo de rotación (segundos)",
+  "inactivitySeconds": "Reanudar tras inactividad (segundos)",
+  "reloadPolicy": "Comportamiento al cambiar",
+  "reloadCache": "En caché (más rápido, menos recargas)",
+  "reloadAlways": "Recargar siempre",
+  "apply": "Aplicar",
+  "addUrl": "Añadir URL del sitio web",
+  "add": "Añadir",
+  "tipIframe": "Consejo: El sitio debe permitir iFrame.",
+  "listOfSites": "Lista de sitios",
+  "nowSwitch": "Cambiar ahora",
+  "clearAll": "Borrar todo",
+  "logs": "Logs",
+  "languageLabel": "Sprache / Language",
+  "countdownLabel": "Mostrar cuenta regresiva antes de cambiar",
+  "openSettings": "Abrir ajustes",
+  "resumeRotation": "Reanudar rotación",
+  "prev": "Página anterior",
+  "next": "Página siguiente",
+  "alertInvalidUrl": "Introduce una URL válida (p. ej. https://example.com).",
+  "alertInitFail": "Error al cargar las listas.",
+  "alertCreateFail": "No se pudo crear la lista (¿ya existe?).",
+  "alertDeleteFail": "No se pudo eliminar la lista.",
+  "confirmDeleteAll": "¿Borrar todos los sitios?"
+}
+
+
