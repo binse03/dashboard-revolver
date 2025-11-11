@@ -13,10 +13,14 @@ const closeBtn = document.getElementById('close-modal');
 const settingsButton = document.getElementById('settings-button');
 const pauseIndicator = document.getElementById('pause-indicator');
 const countdownIndicator = document.getElementById('countdown-indicator');
+const reloadButton = document.getElementById('reload-button');
+const urlIndicator = document.getElementById('url-indicator');
+const gestureEdge = document.getElementById('gesture-edge');
 const openLogsBtn = document.getElementById('open-logs');
 const logsModal = document.getElementById('logs-modal');
 const closeLogsBtn = document.getElementById('close-logs');
 const refreshLogsBtn = document.getElementById('refresh-logs');
+const downloadLogsBtn = document.getElementById('download-logs');
 const clientLogsPre = document.getElementById('client-logs');
 const serverLogsPre = document.getElementById('server-logs');
 const arrowLeft = document.getElementById('arrow-left');
@@ -36,6 +40,8 @@ const playlistSelect = document.getElementById('playlist-select');
 const createPlaylistBtn = document.getElementById('create-playlist');
 const newPlaylistNameInput = document.getElementById('new-playlist-name');
 const deletePlaylistBtn = document.getElementById('delete-playlist');
+const themeSelect = document.getElementById('theme-select');
+const applyThemeBtn = document.getElementById('apply-theme');
 
 let playlists = [];
 let currentPlaylist = null; // { name, sites, intervalMs? }
@@ -52,6 +58,20 @@ let reloadPolicy = 'cache'; // 'cache' | 'reload'
 let countdownTimer = null;
 let nextSwitchAt = 0;
 let countdownEnabled = true;
+let theme = localStorage.getItem('dashboardRevolver.theme') || 'system'; // 'system' | 'dark' | 'light'
+// Allow per-site durations (ms) by supporting site entries as string | { url, durationMs? }
+function getSiteEntry(index) {
+	const raw = sites[index];
+	if (!raw) return null;
+	if (typeof raw === 'string') return { url: raw };
+	if (raw && typeof raw === 'object') return { url: String(raw.url || ''), durationMs: typeof raw.durationMs === 'number' ? raw.durationMs : undefined };
+	return null;
+}
+function getCurrentDurationMs() {
+	const entry = getSiteEntry(currentIndex);
+	if (entry && typeof entry.durationMs === 'number' && entry.durationMs >= 5000) return entry.durationMs;
+	return intervalMs;
+}
 
 // ---- i18n (defensive, loads JSON, safe DOM writes) ----
 const languageSelect = document.getElementById('language-select');
@@ -116,15 +136,12 @@ function applyTranslations() {
 		if (pauseIndicator) pauseIndicator.setAttribute('title', tr('resumeRotation'));
 		if (arrowLeft) arrowLeft.setAttribute('title', tr('prev'));
 		if (arrowRight) arrowRight.setAttribute('title', tr('next'));
-		const siteUrl = document.getElementById('site-url');
-		if (siteUrl) siteUrl.setAttribute('placeholder', 'https://example.com');
+			const siteUrl = document.getElementById('site-url');
+			if (siteUrl) siteUrl.setAttribute('placeholder', 'https://example.com');
 		const newPl = document.getElementById('new-playlist-name');
 		if (newPl) newPl.setAttribute('placeholder', tr('newPlaylistPlaceholder'));
-		const sections = document.querySelectorAll('.modal-section');
-		if (sections[3]) {
-			const siteUrlLabel = sections[3].querySelector('label[for="site-url"]');
+			const siteUrlLabel = document.querySelector('label[for="site-url"]');
 			if (siteUrlLabel) siteUrlLabel.textContent = tr('addUrl');
-		}
 		const addBtnEl = document.getElementById('add-site');
 		if (addBtnEl) addBtnEl.textContent = tr('add');
 		const hintEl = document.querySelector('.hint');
@@ -135,23 +152,99 @@ function applyTranslations() {
 		if (shuffleBtn) shuffleBtn.textContent = tr('nowSwitch');
 		const clearBtnEl = document.getElementById('clear-all');
 		if (clearBtnEl) clearBtnEl.textContent = tr('clearAll');
+		if (reloadButton) {
+			reloadButton.setAttribute('aria-label', tr('reload'));
+			reloadButton.setAttribute('title', tr('reload'));
+		}
+		if (urlIndicator) {
+			urlIndicator.setAttribute('aria-label', tr('currentUrl'));
+		}
+		const themeLbl = document.querySelector('label[for="theme-select"]');
+		if (themeLbl) themeLbl.textContent = tr('themeLabel');
+		const themeSelectEl = document.getElementById('theme-select');
+		if (themeSelectEl) {
+			const optSystem = themeSelectEl.querySelector('option[value="system"]');
+			const optLight = themeSelectEl.querySelector('option[value="light"]');
+			const optDark = themeSelectEl.querySelector('option[value="dark"]');
+			if (optSystem) optSystem.textContent = tr('themeSystem');
+			if (optLight) optLight.textContent = tr('themeLight');
+			if (optDark) optDark.textContent = tr('themeDark');
+		}
+		const applyThemeBtnEl = document.getElementById('apply-theme');
+		if (applyThemeBtnEl) applyThemeBtnEl.textContent = tr('apply');
 	} catch {
 		// ignore translation errors to avoid breaking the app
 	}
 }
-// ---- Client logger ----
+// ---- Theme handling ----
+function getStoredTheme() {
+	const v = localStorage.getItem('dashboardRevolver.theme');
+	return (v === 'system' || v === 'light' || v === 'dark') ? v : 'system';
+}
+function setStoredTheme(v) {
+	const val = (v === 'light' || v === 'dark') ? v : 'system';
+	localStorage.setItem('dashboardRevolver.theme', val);
+	theme = val;
+}
+function applyTheme() {
+	const root = document.documentElement;
+	const body = document.body;
+	const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+	const effective = theme === 'system' ? (prefersDark ? 'dark' : 'light') : theme;
+	if (effective === 'light') {
+		root.setAttribute('data-theme', 'light');
+		if (body) body.setAttribute('data-theme', 'light');
+	} else {
+		root.removeAttribute('data-theme');
+		if (body) body.removeAttribute('data-theme');
+	}
+}
+// follow system changes when in system mode
+(function initThemeFollow() {
+	if (!window.matchMedia) return;
+	const mq = window.matchMedia('(prefers-color-scheme: dark)');
+	const handler = () => {
+		if (getStoredTheme() === 'system') {
+			theme = 'system';
+			applyTheme();
+		}
+	};
+	try { mq.addEventListener('change', handler); } catch { mq.addListener?.(handler); }
+})();
+// ---- Client logger (batched) ----
 const clientLogBuffer = [];
+let clientLogFlushTimer = null;
 function clientLog(level, message, meta = {}) {
 	const entry = { ts: new Date().toISOString(), level, message, meta };
 	clientLogBuffer.push(entry);
-	if (clientLogBuffer.length > 500) clientLogBuffer.shift();
-	// also send to server (fire and forget)
-	fetch('/api/logs', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ level, message, meta })
-	}).catch(() => {});
+	if (clientLogBuffer.length > 1000) clientLogBuffer.shift();
+	if (!clientLogFlushTimer) {
+		clientLogFlushTimer = setTimeout(flushClientLogs, 1500);
+	}
 }
+async function flushClientLogs() {
+	try {
+		const batch = clientLogBuffer.splice(0, clientLogBuffer.length);
+		if (!batch.length) return;
+		await fetch('/api/logs/batch', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ entries: batch })
+		});
+	} catch {
+		// ignore
+	} finally {
+		clientLogFlushTimer = null;
+		if (clientLogBuffer.length) clientLogFlushTimer = setTimeout(flushClientLogs, 1500);
+	}
+}
+// Global error capture
+window.addEventListener('error', (e) => {
+	try { clientLog('error', 'window_error', { message: String(e.message), source: String(e.filename), lineno: e.lineno, colno: e.colno }); } catch {}
+}, { passive: true });
+window.addEventListener('unhandledrejection', (e) => {
+	try { clientLog('error', 'unhandled_rejection', { reason: String(e.reason) }); } catch {}
+});
 
 function apiJson(url, options) {
 	const init = Object.assign({ headers: { 'Content-Type': 'application/json' } }, options || {});
@@ -225,17 +318,72 @@ function setIframeSrcSafe(url) {
 			finalUrl = `${url}${url.includes('?') ? '&' : '?'}_t=${Date.now()}`;
 		}
 	}
-	iframe.src = finalUrl;
+	// Avoid unnecessary navigation in cache mode if URL identical
+	if (reloadPolicy === 'cache') {
+		if (typeof window.__lastIframeUrl === 'string' && window.__lastIframeUrl === finalUrl) {
+			// keep as is
+		} else {
+			iframe.src = finalUrl;
+			window.__lastIframeUrl = finalUrl;
+		}
+	} else {
+		iframe.src = finalUrl;
+		window.__lastIframeUrl = finalUrl;
+	}
+	// Update URL indicator
+	try {
+		const u = new URL(url);
+		urlIndicator.textContent = `${u.hostname}${u.pathname}`;
+		urlIndicator.setAttribute('title', url);
+	} catch {
+		urlIndicator.textContent = url;
+		urlIndicator.setAttribute('title', url);
+	}
 	lastShownAt = Date.now();
-	nextSwitchAt = lastShownAt + intervalMs;
+	const dur = getCurrentDurationMs();
+	nextSwitchAt = lastShownAt + dur;
 	startCountdown();
 	clientLog('info', 'show_site', { index: currentIndex, url });
 }
 
+// Try to inject a custom scrollbar into same-origin iframe documents
+function tryInjectCustomScrollbar() {
+	try {
+		const doc = iframe.contentDocument;
+		if (!doc) return;
+		const root = doc.scrollingElement || doc.documentElement;
+		if (!root) return;
+		// Only inject if there is scrollable overflow
+		const hasVerticalScroll = root.scrollHeight > root.clientHeight;
+		const hasHorizontalScroll = root.scrollWidth > root.clientWidth;
+		if (!hasVerticalScroll && !hasHorizontalScroll) return;
+		const styleId = 'dashboard-revolver-custom-scrollbar';
+		if (doc.getElementById(styleId)) return; // prevent duplicates
+		const style = doc.createElement('style');
+		style.id = styleId;
+		style.textContent = `
+			html, body { overflow-y: auto !important; overflow-x: auto !important; scrollbar-width: thin; scrollbar-color: #4cc2ff #0e141b; }
+			/* Chromium/WebKit */
+			*::-webkit-scrollbar { width: 10px; height: 10px; }
+			*::-webkit-scrollbar-track { background: #0e141b; border-radius: 8px; }
+			*::-webkit-scrollbar-thumb { background-color: #3aa7e0; border-radius: 8px; border: 2px solid #0e141b; }
+			*::-webkit-scrollbar-thumb:hover { background-color: #4cc2ff; }
+		`;
+		doc.head ? doc.head.appendChild(style) : doc.documentElement.appendChild(style);
+	} catch {
+		// Cross-origin iframe; cannot access. Silently ignore.
+	}
+}
+iframe.addEventListener('load', () => {
+	// Best-effort: if same-origin, customize the scrollbar
+	tryInjectCustomScrollbar();
+});
 function showCurrent() {
 	if (!sites.length) return;
 	if (currentIndex >= sites.length) currentIndex = 0;
-	setIframeSrcSafe(sites[currentIndex]);
+	const entry = getSiteEntry(currentIndex);
+	if (!entry || !entry.url) return;
+	setIframeSrcSafe(entry.url);
 }
 
 function nextSite() {
@@ -254,12 +402,17 @@ function prevSite() {
 function startRotation() {
 	if (isPaused) return;
 	stopRotation();
-	rotationTimer = setInterval(nextSite, intervalMs);
-	clientLog('info', 'rotation_started', { intervalMs });
+	// schedule per-site
+	const dur = getCurrentDurationMs();
+	rotationTimer = setTimeout(() => {
+		nextSite();
+		startRotation();
+	}, dur);
+	clientLog('info', 'rotation_started', { intervalMs: dur });
 }
 function stopRotation() {
 	if (rotationTimer) {
-		clearInterval(rotationTimer);
+		clearTimeout(rotationTimer);
 		rotationTimer = null;
 	}
 	stopCountdown();
@@ -328,7 +481,7 @@ function updateCountdown() {
 	const now = Date.now();
 	const remaining = Math.max(0, nextSwitchAt - now);
 	// Show only in the final segment (symbolic "5 seconds"): here we map the last 20% of interval to 5..1 steps
-	const windowMs = Math.max(5000, Math.floor(intervalMs * 0.2));
+	const windowMs = Math.max(5000, Math.floor(getCurrentDurationMs() * 0.2));
 	if (remaining <= windowMs) {
 		const bucket = Math.max(1, Math.ceil((remaining / windowMs) * 5)); // 5..1
 		countdownIndicator.textContent = String(bucket);
@@ -340,13 +493,23 @@ function updateCountdown() {
 
 function renderList() {
 	siteList.innerHTML = '';
-	sites.forEach((url, i) => {
+	sites.forEach((raw, i) => {
+		const entry = typeof raw === 'string' ? { url: raw } : (raw || {});
+		const url = String(entry.url || '');
 		const li = document.createElement('li');
 		li.className = 'site-item';
 
 		const urlSpan = document.createElement('span');
 		urlSpan.className = 'url';
 		urlSpan.textContent = url;
+
+		const durationInput = document.createElement('input');
+		durationInput.type = 'number';
+		durationInput.min = '5';
+		durationInput.step = '5';
+		durationInput.value = String(Math.round(((typeof entry.durationMs === 'number' ? entry.durationMs : intervalMs) / 1000)));
+		durationInput.title = 'Ablaufzeit (Sekunden)';
+		durationInput.style.width = '110px';
 
 		const controls = document.createElement('div');
 		controls.className = 'controls';
@@ -390,6 +553,22 @@ function renderList() {
 			}
 		};
 
+		durationInput.addEventListener('change', () => {
+			const secs = Math.max(5, Number(durationInput.value || '0'));
+			durationInput.value = String(secs);
+			const ms = secs * 1000;
+			const updated = { url };
+			if (ms !== intervalMs) updated.durationMs = ms;
+			sites[i] = updated;
+			savePlaylistDebounced();
+			// If this is the current site, update scheduling
+			if (i === currentIndex) {
+				nextSwitchAt = Date.now() + ms;
+				startRotation();
+			}
+		});
+
+		controls.appendChild(durationInput);
 		controls.appendChild(upBtn);
 		controls.appendChild(downBtn);
 		controls.appendChild(removeBtn);
@@ -410,7 +589,7 @@ function addSiteFromInput() {
 		alert('Bitte eine gültige URL eingeben (z.B. https://example.com).');
 		return;
 	}
-	sites.push(url);
+	sites.push({ url });
 	urlInput.value = '';
 	savePlaylistDebounced();
 	renderList();
@@ -439,6 +618,8 @@ function manualShuffle() {
 let showBtnTimeout = null;
 function onAnyActivity() {
 	settingsButton.classList.add('visible');
+	reloadButton.classList.add('visible');
+	urlIndicator.classList.add('visible');
 	arrowLeft.classList.add('visible');
 	arrowRight.classList.add('visible');
 	// If currently not within the no-pause buffer, pause on activity
@@ -453,6 +634,8 @@ function onAnyActivity() {
 	if (showBtnTimeout) clearTimeout(showBtnTimeout);
 	showBtnTimeout = setTimeout(() => {
 		settingsButton.classList.remove('visible');
+		reloadButton.classList.remove('visible');
+		urlIndicator.classList.remove('visible');
 		arrowLeft.classList.remove('visible');
 		arrowRight.classList.remove('visible');
 	}, 2500);
@@ -499,6 +682,7 @@ if (applyLanguageBtn) {
 		localStorage.setItem('dashboardRevolver.lang', language);
 		await loadI18n(language);
 		applyTranslations();
+		flashApplied(applyLanguageBtn);
 		clientLog('info', 'language_changed', { language });
 	});
 }
@@ -516,12 +700,14 @@ applyInactivityBtn.addEventListener('click', () => {
 		// restart inactivity timer with new value
 		startAutoResumeTimer();
 	}
+	flashApplied(applyInactivityBtn);
 });
 applyReloadBtn.addEventListener('click', () => {
 	const val = reloadSelect.value === 'reload' ? 'reload' : 'cache';
 	reloadPolicy = val;
 	savePlaylistDebounced();
 	// apply on next switch; no immediate reload to avoid surprise
+	flashApplied(applyReloadBtn);
 });
 shuffleNowBtn.addEventListener('click', manualShuffle);
 clearAllBtn.addEventListener('click', () => {
@@ -538,6 +724,20 @@ settingsButton.addEventListener('click', () => {
 	openModal();
 	onAnyActivity();
 		clientLog('info', 'open_settings');
+});
+reloadButton.addEventListener('click', () => {
+	// Force reload by cache-busting current url
+	const entry = getSiteEntry(currentIndex);
+	if (!entry || !entry.url) return;
+	try {
+		const u = new URL(entry.url);
+		u.searchParams.set('_r', String(Date.now()));
+		iframe.src = u.toString();
+	} catch {
+		iframe.src = `${entry.url}${entry.url.includes('?') ? '&' : '?'}_r=${Date.now()}`;
+	}
+	onAnyActivity();
+		clientLog('info', 'reload_click');
 });
 pauseIndicator.addEventListener('click', () => {
 	// resume
@@ -557,9 +757,19 @@ arrowRight.addEventListener('click', () => {
 		clientLog('info', 'arrow_right');
 });
 
-['mousemove','pointerdown','touchstart','keydown'].forEach(evt => {
+['mousemove','pointerdown','touchstart','touchmove','wheel','keydown','pointermove'].forEach(evt => {
 	window.addEventListener(evt, onAnyActivity, { passive: true });
 });
+// Try to detect pointer entering iframe area (works for mouse)
+['mouseenter','mouseover','pointerenter'].forEach(evt => {
+	iframe.addEventListener(evt, onAnyActivity, { passive: true });
+});
+// Top-edge gesture strip for touch
+if (gestureEdge) {
+	['pointerdown','pointermove','touchstart','touchmove'].forEach(evt => {
+		gestureEdge.addEventListener(evt, onAnyActivity, { passive: true });
+	});
+}
 
 // Countdown switch listener (immediate effect and persist)
 (() => {
@@ -576,71 +786,35 @@ arrowRight.addEventListener('click', () => {
 	});
 })();
 
-playlistSelect.addEventListener('change', async () => {
-	const name = playlistSelect.value;
-	if (!name) return;
-	localStorage.setItem(STORAGE_KEYS.currentPlaylist, name);
-	await loadPlaylists();
-	await loadCurrentPlaylist();
-	renderList();
-	if (sites.length) {
-		currentIndex = 0;
-		showCurrent();
-		startRotation();
-	} else {
-		iframe.removeAttribute('src');
-		stopRotation();
-	}
-});
+// Theme select binding
+if (applyThemeBtn && themeSelect) {
+	applyThemeBtn.addEventListener('click', () => {
+		const v = themeSelect.value;
+		setStoredTheme(v);
+		applyTheme();
+		flashApplied(applyThemeBtn);
+	});
+}
 
-createPlaylistBtn.addEventListener('click', async () => {
-	const name = (newPlaylistNameInput.value || '').trim();
-	if (!name) return;
+// Tiny confirmation on apply buttons
+function flashApplied(btn) {
 	try {
-		const created = await apiJson('/api/playlists', {
-			method: 'POST',
-			body: JSON.stringify({ name, sites: [], intervalMs })
-		});
-		newPlaylistNameInput.value = '';
-		await loadPlaylists();
-		localStorage.setItem(STORAGE_KEYS.currentPlaylist, created.name);
-		await loadCurrentPlaylist();
-		renderList();
-			clientLog('info', 'playlist_created', { name: created.name });
-	} catch (e) {
-		alert('Playlist konnte nicht erstellt werden (existiert evtl. schon?).');
-	}
-});
-
-deletePlaylistBtn.addEventListener('click', async () => {
-	if (!currentPlaylist) return;
-	if (!confirm(`Playlist "${currentPlaylist.name}" löschen?`)) return;
-	try {
-		await apiJson(`/api/playlists/${encodeURIComponent(currentPlaylist.name)}`, { method: 'DELETE' });
-		await loadPlaylists();
-		if (playlists.length === 0) {
-			await apiJson('/api/playlists', {
-				method: 'POST',
-				body: JSON.stringify({ name: 'Standard', sites: DEFAULT_SITES, intervalMs })
-			});
-			await loadPlaylists();
-		}
-		localStorage.setItem(STORAGE_KEYS.currentPlaylist, playlists[0]);
-		await loadCurrentPlaylist();
-		renderList();
-		if (sites.length) {
-			currentIndex = 0;
-			showCurrent();
-			startRotation();
-		} else {
-			iframe.removeAttribute('src');
-			stopRotation();
-		}
-			clientLog('info', 'playlist_deleted');
-	} catch {
-		alert('Playlist konnte nicht gelöscht werden.');
-	}
-});
+		if (!btn) return;
+		const oldText = btn.textContent;
+		const oldBg = btn.style.background;
+		const oldColor = btn.style.color;
+		btn.disabled = true;
+		btn.textContent = '✓';
+		btn.style.background = '#22c55e'; /* green */
+		btn.style.color = '#052e16';
+		setTimeout(() => {
+			btn.textContent = oldText;
+			btn.style.background = oldBg;
+			btn.style.color = oldColor;
+			btn.disabled = false;
+		}, 1200);
+	} catch {}
+}
 
 // Initialize
 (async function init() {
@@ -649,6 +823,10 @@ deletePlaylistBtn.addEventListener('click', async () => {
 		if (languageSelect) languageSelect.value = language;
 		await loadI18n(language);
 		applyTranslations();
+		// theme boot (system default)
+		theme = getStoredTheme();
+		if (themeSelect) themeSelect.value = theme;
+		applyTheme();
 		await ensureDefaultPlaylist();
 		await loadCurrentPlaylist();
 		renderList();
@@ -677,6 +855,23 @@ closeLogsBtn.addEventListener('click', () => {
 refreshLogsBtn.addEventListener('click', async () => {
 	await refreshLogs();
 });
+if (downloadLogsBtn) {
+	downloadLogsBtn.addEventListener('click', () => {
+		try {
+			const clientText = clientLogBuffer.map(e => `${e.ts} [${e.level}] ${e.message} ${JSON.stringify(e.meta || {})}`).join('\\n');
+			const serverText = serverLogsPre.textContent || '';
+			const all = `Client Logs\\n${clientText}\\n\\nServer Logs\\n${serverText}`;
+			const blob = new Blob([all], { type: 'text/plain;charset=utf-8' });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `dashboard-revolver-logs-${Date.now()}.txt`;
+			document.body.appendChild(a);
+			a.click();
+			setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
+		} catch {}
+	});
+}
 
 async function refreshLogs() {
 	// render client logs

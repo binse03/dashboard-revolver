@@ -17,6 +17,7 @@
 * Create and manage multiple playlists for different rotations
 * Automatic pause and resume functionality
 * Lightweight log view to monitor activity directly from the client
+* Dark/Light Mode
 
 ---
 

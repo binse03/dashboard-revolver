@@ -17,7 +17,7 @@
   "nowSwitch": "Przełącz teraz",
   "clearAll": "Usuń wszystko",
   "logs": "Logi",
-  "languageLabel": "Sprache / Language",
+  "languageLabel": "Język",
   "countdownLabel": "Pokaż odliczanie przed przełączeniem",
   "openSettings": "Otwórz ustawienia",
   "resumeRotation": "Wznów rotację",
@@ -27,7 +27,11 @@
   "alertInitFail": "Nie udało się załadować playlist.",
   "alertCreateFail": "Nie udało się utworzyć playlisty (może już istnieje?).",
   "alertDeleteFail": "Nie udało się usunąć playlisty.",
-  "confirmDeleteAll": "Usunąć wszystkie strony?"
+  "confirmDeleteAll": "Usunąć wszystkie strony?",
+  "themeLabel": "Tryb (Jasny/Ciemny)",
+  "themeSystem": "Podążaj za systemem",
+  "themeLight": "Jasny",
+  "themeDark": "Ciemny"
 }
 
 

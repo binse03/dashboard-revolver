@@ -17,7 +17,7 @@
   "nowSwitch": "Switch now",
   "clearAll": "Delete all",
   "logs": "Logs",
-  "languageLabel": "Sprache / Language",
+  "languageLabel": "Language",
   "countdownLabel": "Show countdown before switching",
   "openSettings": "Open settings",
   "resumeRotation": "Resume rotation",
@@ -27,7 +27,15 @@
   "alertInitFail": "Failed to load playlists.",
   "alertCreateFail": "Could not create playlist (maybe already exists?).",
   "alertDeleteFail": "Could not delete playlist.",
-  "confirmDeleteAll": "Delete all websites?"
+  "confirmDeleteAll": "Delete all websites?",
+  "reload": "Reload",
+  "currentUrl": "Current page",
+  "perSiteSeconds": "Per-site duration (seconds)",
+  "themeLabel": "Mode (Light/Dark)",
+  "themeSystem": "Follow system",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "applied": "Applied"
 }
 
 

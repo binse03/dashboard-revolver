@@ -26,7 +26,7 @@ function ensureDirsSync() {
 ensureDirsSync();
 
 // ---- Simple in-memory ring buffers for logs ----
-const MAX_LOGS = 500;
+const MAX_LOGS = 1000;
 let serverLogs = [];
 let clientLogs = [];
 function pushLog(buffer, entry) {
@@ -64,6 +64,18 @@ app.get('/', (_req, res) => {
 // Health endpoint
 app.get('/healthz', (_req, res) => {
 	res.json({ ok: true, uptime: process.uptime() });
+});
+
+// Simple request logging middleware
+app.use((req, res, next) => {
+	const started = Date.now();
+	res.on('finish', () => {
+		const duration = Date.now() - started;
+		const ua = req.headers['user-agent'] || '';
+		const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '';
+		pushLog(serverLogs, { ts: new Date().toISOString(), level: 'info', message: 'http_request', method: req.method, path: req.originalUrl || req.url, status: res.statusCode, durationMs: duration, ua, ip });
+	});
+	next();
 });
 
 // ---- Playlists API ----
@@ -179,6 +191,18 @@ app.post('/api/logs', (req, res) => {
 	pushLog(clientLogs, entry);
 	// Do not mirror client logs to console/logServer to avoid spam
 	res.json({ ok: true });
+});
+// Batch logs endpoint
+app.post('/api/logs/batch', (req, res) => {
+	const { entries } = req.body || {};
+	if (!Array.isArray(entries)) return res.status(400).json({ error: 'entries must be array' });
+	const ua = req.headers['user-agent'] || '';
+	const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '';
+	entries.forEach((e) => {
+		const entry = { ts: e?.ts || new Date().toISOString(), level: e?.level || 'info', message: e?.message || '', meta: Object.assign({}, e?.meta || {}, { ua, ip }) };
+		pushLog(clientLogs, entry);
+	});
+	res.json({ ok: true, received: entries.length });
 });
 
 app.listen(PORT, () => {

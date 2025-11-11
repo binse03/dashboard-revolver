@@ -17,7 +17,7 @@
   "nowSwitch": "Nu wisselen",
   "clearAll": "Alles verwijderen",
   "logs": "Logs",
-  "languageLabel": "Sprache / Language",
+  "languageLabel": "Taal",
   "countdownLabel": "Aftellen tonen vóór het wisselen",
   "openSettings": "Instellingen openen",
   "resumeRotation": "Rotatie hervatten",
@@ -27,7 +27,11 @@
   "alertInitFail": "Afspeellijsten laden mislukt.",
   "alertCreateFail": "Afspeellijst maken mislukt (bestaat misschien al?).",
   "alertDeleteFail": "Afspeellijst verwijderen mislukt.",
-  "confirmDeleteAll": "Alle websites verwijderen?"
+  "confirmDeleteAll": "Alle websites verwijderen?",
+  "themeLabel": "Modus (Licht/Donker)",
+  "themeSystem": "Systeem volgen",
+  "themeLight": "Licht",
+  "themeDark": "Donker"
 }
 
 

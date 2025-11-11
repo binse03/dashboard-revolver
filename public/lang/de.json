@@ -17,7 +17,7 @@
   "nowSwitch": "Jetzt wechseln",
   "clearAll": "Alle löschen",
   "logs": "Logs",
-  "languageLabel": "Sprache / Language",
+  "languageLabel": "Sprache",
   "countdownLabel": "Countdown vor Wechsel anzeigen",
   "openSettings": "Einstellungen öffnen",
   "resumeRotation": "Rotation fortsetzen",
@@ -27,7 +27,15 @@
   "alertInitFail": "Fehler beim Laden der Playlists.",
   "alertCreateFail": "Playlist konnte nicht erstellt werden (existiert evtl. schon?).",
   "alertDeleteFail": "Playlist konnte nicht gelöscht werden.",
-  "confirmDeleteAll": "Alle Websites löschen?"
+  "confirmDeleteAll": "Alle Websites löschen?",
+  "reload": "Neu laden",
+  "currentUrl": "Aktuelle Seite",
+  "perSiteSeconds": "Ablaufzeit (Sekunden)",
+  "themeLabel": "Modus (Hell/Dunkel)",
+  "themeSystem": "System folgen",
+  "themeLight": "Hell",
+  "themeDark": "Dunkel",
+  "applied": "Übernommen"
 }
 
 

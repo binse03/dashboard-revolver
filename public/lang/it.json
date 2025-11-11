@@ -17,7 +17,7 @@
   "nowSwitch": "Cambia ora",
   "clearAll": "Elimina tutto",
   "logs": "Log",
-  "languageLabel": "Sprache / Language",
+  "languageLabel": "Lingua",
   "countdownLabel": "Mostra conto alla rovescia prima del cambio",
   "openSettings": "Apri impostazioni",
   "resumeRotation": "Riprendi rotazione",
@@ -27,7 +27,11 @@
   "alertInitFail": "Caricamento playlist non riuscito.",
   "alertCreateFail": "Impossibile creare la playlist (forse esiste già?).",
   "alertDeleteFail": "Impossibile eliminare la playlist.",
-  "confirmDeleteAll": "Eliminare tutti i siti?"
+  "confirmDeleteAll": "Eliminare tutti i siti?",
+  "themeLabel": "Modalità (Chiaro/Scuro)",
+  "themeSystem": "Segui sistema",
+  "themeLight": "Chiaro",
+  "themeDark": "Scuro"
 }
 
 

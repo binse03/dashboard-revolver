@@ -17,7 +17,7 @@
   "nowSwitch": "Şimdi değiştir",
   "clearAll": "Tümünü sil",
   "logs": "Günlükler",
-  "languageLabel": "Sprache / Language",
+  "languageLabel": "Dil",
   "countdownLabel": "Geçişten önce geri sayımı göster",
   "openSettings": "Ayarları aç",
   "resumeRotation": "Döngüye devam et",
@@ -27,7 +27,11 @@
   "alertInitFail": "Listeler yüklenemedi.",
   "alertCreateFail": "Liste oluşturulamadı (zaten var olabilir).",
   "alertDeleteFail": "Liste silinemedi.",
-  "confirmDeleteAll": "Tüm web siteleri silinsin mi?"
+  "confirmDeleteAll": "Tüm web siteleri silinsin mi?",
+  "themeLabel": "Tema (Açık/Koyu)",
+  "themeSystem": "Sistemi takip et",
+  "themeLight": "Açık",
+  "themeDark": "Koyu"
 }
 
 

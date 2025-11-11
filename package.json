@@ -1,6 +1,6 @@
 {
   "name": "dashboard-revolver",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Fullscreen dashboard that rotates through multiple websites with a hidden settings modal.",
   "main": "server.js",
   "type": "module",

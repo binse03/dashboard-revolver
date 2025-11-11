@@ -12,9 +12,13 @@
 	</div>
 
 	<!-- Floating Settings Button (appears on movement) -->
+	<button id="reload-button" aria-label="Neu laden" title="Neu laden">🔄</button>
 	<button id="settings-button" aria-label="Einstellungen öffnen" title="Einstellungen">⚙️</button>
 	<button id="pause-indicator" aria-label="Rotation fortsetzen" title="Rotation fortsetzen">⏸</button>
 	<button id="countdown-indicator" aria-hidden="true" title="Nächster Wechsel">5</button>
+	<div id="url-indicator" aria-live="polite"></div>
+	<!-- small, unobtrusive touch edge to detect gestures without blocking iframe -->
+	<div id="gesture-edge" aria-hidden="true"></div>
 
 	<!-- Left/Right navigation arrows (appear on movement) -->
 	<button id="arrow-left" aria-label="Vorherige Seite" title="Vorherige Seite">◀</button>
@@ -23,7 +27,7 @@
 	<!-- Settings Modal (top-right) -->
 	<div id="settings-modal" aria-hidden="true">
 		<div class="modal-top">
-			<div class="logo">Dashboard Revolver <span class="version">v.1.0.0</span></div>
+			<div class="logo">Dashboard Revolver <span class="version">v.1.0.1</span></div>
 			<button id="open-logs" class="ghost" title="Logs anzeigen">Logs</button>
 		</div>
 		<div class="modal-header">
@@ -42,21 +46,21 @@
 			</div>
 		</div>
 		<hr>
-		<div class="modal-section">
+		<div class="modal-section inline">
 			<label for="interval-seconds">Rotationszeit (Sekunden)</label>
 			<input id="interval-seconds" type="number" min="5" step="5" value="30">
 			<div class="stacked-actions">
 				<button id="apply-interval">Übernehmen</button>
 			</div>
 		</div>
-		<div class="modal-section">
+		<div class="modal-section inline">
 			<label for="inactivity-seconds">Auto-Fortsetzen nach Inaktivität (Sekunden)</label>
 			<input id="inactivity-seconds" type="number" min="5" step="5" value="15">
 			<div class="stacked-actions">
 				<button id="apply-inactivity">Übernehmen</button>
 			</div>
 		</div>
-		<div class="modal-section">
+		<div class="modal-section inline">
 			<label for="language-select">Sprache / Language</label>
 			<select id="language-select">
 				<option value="de">Deutsch</option>
@@ -73,7 +77,7 @@
 				<button id="apply-language">Übernehmen</button>
 			</div>
 		</div>
-		<div class="modal-section">
+		<div class="modal-section inline">
 			<label for="reload-policy">Ladeverhalten beim Wechsel</label>
 			<select id="reload-policy">
 				<option value="cache">Zwischengespeichert (schneller, weniger Reloads)</option>
@@ -83,12 +87,22 @@
 				<button id="apply-reload">Übernehmen</button>
 			</div>
 		</div>
-		<div class="modal-section">
+		<div class="modal-section inline">
 			<label for="countdown-enabled">Countdown vor Wechsel anzeigen</label>
 			<label class="switch">
 				<input id="countdown-enabled" type="checkbox">
 				<span class="slider round"></span>
 			</label>
+			<div></div>
+		</div>
+		<div class="modal-section inline">
+			<label for="theme-select">Modus (Hell/Dunkel)</label>
+			<select id="theme-select" title="Theme auswählen">
+				<option value="system">System folgen</option>
+				<option value="light">Hell</option>
+				<option value="dark">Dunkel</option>
+			</select>
+			<button id="apply-theme">Übernehmen</button>
 		</div>
 		<hr>
 		<div class="modal-section">
@@ -116,6 +130,7 @@
 			<h2>Logs</h2>
 			<div class="grow"></div>
 			<button id="refresh-logs" class="ghost">Aktualisieren</button>
+			<button id="download-logs" class="ghost">Download</button>
 		</div>
 		<div class="modal-section">
 			<h3>Client Logs</h3>
