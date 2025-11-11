@@ -305,6 +305,106 @@ function renderPlaylistOptions(selected) {
 	});
 }
 
+async function onPlaylistChanged() {
+	try {
+		const name = playlistSelect.value;
+		if (!name) return;
+		localStorage.setItem(STORAGE_KEYS.currentPlaylist, name);
+		await loadCurrentPlaylist();
+		renderList();
+		if (sites.length) {
+			showCurrent();
+			startRotation();
+		} else {
+			iframe.removeAttribute('src');
+			stopRotation();
+		}
+		clientLog('info', 'playlist_changed', { name });
+	} catch (e) {
+		alert('Konnte Playlist nicht laden.');
+		clientLog('error', 'playlist_change_failed', { error: String(e) });
+	}
+}
+
+import { createPlaylistOnServer, isDuplicateError, normalizeName } from './js/playlist.js';
+
+async function createPlaylist() {
+	const nameRaw = normalizeName(newPlaylistNameInput.value || '');
+	if (!nameRaw) {
+		alert('Bitte einen Playlist-Namen eingeben.');
+		return;
+	}
+	try {
+		const created = await createPlaylistOnServer({
+			name: nameRaw,
+			sites: [],
+			intervalMs,
+			inactivityMs,
+			reloadPolicy,
+			countdownEnabled
+		});
+		newPlaylistNameInput.value = '';
+		// Reload list and select new one
+		await loadPlaylists();
+		renderPlaylistOptions(created.name);
+		localStorage.setItem(STORAGE_KEYS.currentPlaylist, created.name);
+		await loadCurrentPlaylist();
+		renderList();
+		if (sites.length) {
+			showCurrent();
+			startRotation();
+		} else {
+			iframe.removeAttribute('src');
+			stopRotation();
+		}
+		clientLog('info', 'playlist_created', { name: created.name });
+	} catch (e) {
+		let msg = 'Fehler beim Erstellen der Playlist.';
+		if (isDuplicateError(e)) msg = 'Playlist existiert bereits.';
+		alert(msg);
+		clientLog('error', 'playlist_create_failed', { error: String(e) });
+	}
+}
+
+async function deleteCurrentPlaylist() {
+	const name = playlistSelect.value;
+	if (!name) return;
+	if (playlists.length <= 1) {
+		alert('Die letzte Playlist kann nicht gelöscht werden.');
+		return;
+	}
+	if (!confirm(`Playlist "${name}" wirklich löschen?`)) return;
+	try {
+		await apiJson(`/api/playlists/${encodeURIComponent(name)}`, { method: 'DELETE' });
+		// Reload lists
+		await loadPlaylists();
+		// Choose next available playlist
+		const next = playlists[0] || '';
+		if (next) {
+			localStorage.setItem(STORAGE_KEYS.currentPlaylist, next);
+			renderPlaylistOptions(next);
+			await loadCurrentPlaylist();
+			renderList();
+			if (sites.length) {
+				showCurrent();
+				startRotation();
+			} else {
+				iframe.removeAttribute('src');
+				stopRotation();
+			}
+		} else {
+			// Fallback should not happen due to guard, but keep defensive
+			renderPlaylistOptions('');
+			iframe.removeAttribute('src');
+			stopRotation();
+		}
+		clientLog('info', 'playlist_deleted', { name });
+	} catch (e) {
+		alert('Fehler beim Löschen der Playlist.');
+		clientLog('error', 'playlist_delete_failed', { error: String(e) });
+	}
+}
+
 function setIframeSrcSafe(url) {
 	// Some sites block iframing (X-Frame-Options/CSP). If blocked, users will see a browser message.
 	let finalUrl = url;
@@ -408,6 +508,8 @@ function startRotation() {
 		nextSite();
 		startRotation();
 	}, dur);
+	// ensure countdown runs during rotation wait window
+	startCountdown();
 	clientLog('info', 'rotation_started', { intervalMs: dur });
 }
 function stopRotation() {
@@ -415,7 +517,6 @@ function stopRotation() {
 		clearTimeout(rotationTimer);
 		rotationTimer = null;
 	}
-	stopCountdown();
 	clientLog('info', 'rotation_stopped');
 }
 
@@ -432,7 +533,7 @@ function setPaused(p) {
 		pauseIndicator.classList.remove('visible');
 		startRotation();
 		stopAutoResumeTimer();
-		nextSwitchAt = Date.now() + intervalMs;
+		nextSwitchAt = Date.now() + getCurrentDurationMs();
 		startCountdown();
 		clientLog('info', 'resumed');
 	}
@@ -685,6 +786,16 @@ if (applyLanguageBtn) {
 		flashApplied(applyLanguageBtn);
 		clientLog('info', 'language_changed', { language });
 	});
+}
+// Playlist wiring
+if (playlistSelect) {
+	playlistSelect.addEventListener('change', onPlaylistChanged);
+}
+if (createPlaylistBtn) {
+	createPlaylistBtn.addEventListener('click', createPlaylist);
+}
+if (deletePlaylistBtn) {
+	deletePlaylistBtn.addEventListener('click', deleteCurrentPlaylist);
 }
 addBtn.addEventListener('click', addSiteFromInput);
 urlInput.addEventListener('keydown', (e) => {
