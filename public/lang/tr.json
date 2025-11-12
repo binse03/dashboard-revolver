@@ -19,6 +19,8 @@
   "logs": "Günlükler",
   "languageLabel": "Dil",
   "countdownLabel": "Geçişten önce geri sayımı göster",
+  "siteTrayLabel": "Uygulama çubuğunu göster",
+  "siteTrayAriaLabel": "Web sitelerine hızlı erişim",
   "openSettings": "Ayarları aç",
   "resumeRotation": "Döngüye devam et",
   "prev": "Önceki sayfa",

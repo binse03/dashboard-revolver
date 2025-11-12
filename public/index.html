@@ -24,6 +24,8 @@
 	<button id="arrow-left" aria-label="Vorherige Seite" title="Vorherige Seite">◀</button>
 	<button id="arrow-right" aria-label="Nächste Seite" title="Nächste Seite">▶</button>
 
+	<div id="site-tray" aria-label="Schnellzugriff"></div>
+
 	<!-- Settings Modal (top-right) -->
 	<div id="settings-modal" aria-hidden="true">
 		<div class="modal-top">
@@ -91,6 +93,14 @@
 			<label for="countdown-enabled">Countdown vor Wechsel anzeigen</label>
 			<label class="switch">
 				<input id="countdown-enabled" type="checkbox">
+				<span class="slider round"></span>
+			</label>
+			<div></div>
+		</div>
+		<div class="modal-section inline">
+			<label for="site-tray-enabled">App-Leiste anzeigen</label>
+			<label class="switch">
+				<input id="site-tray-enabled" type="checkbox">
 				<span class="slider round"></span>
 			</label>
 			<div></div>

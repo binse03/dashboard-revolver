@@ -19,6 +19,8 @@
   "logs": "Logs",
   "languageLabel": "Language",
   "countdownLabel": "Show countdown before switching",
+  "siteTrayLabel": "Show app bar",
+  "siteTrayAriaLabel": "Quick access to websites",
   "openSettings": "Open settings",
   "resumeRotation": "Resume rotation",
   "prev": "Previous page",

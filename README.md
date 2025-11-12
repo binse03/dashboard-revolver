@@ -18,6 +18,7 @@
 * Automatic pause and resume functionality
 * Lightweight log view to monitor activity directly from the client
 * Dark/Light Mode
+* App Tray for faster switching
 
 ---
 
@@ -50,7 +51,7 @@
    ```
 
 Then open your browser and visit:
- **[http://localhost:3000](http://localhost:3000)** or  **[http://<ip_from_host>:3000](http://<ip_from_host>:3000)**
+ **[http://localhost:5000](http://localhost:5000)** or  **[http://<ip_from_host>:5000](http://<ip_from_host>:5000)**
 
 ---
 

@@ -19,6 +19,8 @@
   "logs": "Logi",
   "languageLabel": "Język",
   "countdownLabel": "Pokaż odliczanie przed przełączeniem",
+  "siteTrayLabel": "Pokaż pasek aplikacji",
+  "siteTrayAriaLabel": "Szybki dostęp do stron",
   "openSettings": "Otwórz ustawienia",
   "resumeRotation": "Wznów rotację",
   "prev": "Poprzednia strona",

@@ -19,6 +19,8 @@
   "logs": "Logs",
   "languageLabel": "Taal",
   "countdownLabel": "Aftellen tonen vóór het wisselen",
+  "siteTrayLabel": "App-balk tonen",
+  "siteTrayAriaLabel": "Snelle toegang tot websites",
   "openSettings": "Instellingen openen",
   "resumeRotation": "Rotatie hervatten",
   "prev": "Vorige pagina",

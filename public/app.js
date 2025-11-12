@@ -42,6 +42,8 @@ const newPlaylistNameInput = document.getElementById('new-playlist-name');
 const deletePlaylistBtn = document.getElementById('delete-playlist');
 const themeSelect = document.getElementById('theme-select');
 const applyThemeBtn = document.getElementById('apply-theme');
+const siteTray = document.getElementById('site-tray');
+const siteTrayToggle = document.getElementById('site-tray-enabled');
 
 let playlists = [];
 let currentPlaylist = null; // { name, sites, intervalMs? }
@@ -59,6 +61,7 @@ let countdownTimer = null;
 let nextSwitchAt = 0;
 let countdownEnabled = true;
 let theme = localStorage.getItem('dashboardRevolver.theme') || 'system'; // 'system' | 'dark' | 'light'
+let siteTrayEnabled = true;
 // Allow per-site durations (ms) by supporting site entries as string | { url, durationMs? }
 function getSiteEntry(index) {
 	const raw = sites[index];
@@ -118,6 +121,8 @@ function applyTranslations() {
 		if (lblLang) lblLang.textContent = tr('languageLabel');
 		const lblCountdown = document.querySelector('label[for="countdown-enabled"]');
 		if (lblCountdown) lblCountdown.textContent = tr('countdownLabel');
+		const lblSiteTray = document.querySelector('label[for="site-tray-enabled"]');
+		if (lblSiteTray) lblSiteTray.textContent = tr('siteTrayLabel');
 		const btnApplyInterval = document.getElementById('apply-interval');
 		if (btnApplyInterval) btnApplyInterval.textContent = tr('apply');
 		const btnApplyInactivity = document.getElementById('apply-inactivity');
@@ -172,6 +177,7 @@ function applyTranslations() {
 		}
 		const applyThemeBtnEl = document.getElementById('apply-theme');
 		if (applyThemeBtnEl) applyThemeBtnEl.textContent = tr('apply');
+		if (siteTray) siteTray.setAttribute('aria-label', tr('siteTrayAriaLabel'));
 	} catch {
 		// ignore translation errors to avoid breaking the app
 	}
@@ -265,7 +271,7 @@ async function ensureDefaultPlaylist() {
 	if (playlists.length === 0) {
 		const created = await apiJson('/api/playlists', {
 			method: 'POST',
-			body: JSON.stringify({ name: 'Standard', sites: DEFAULT_SITES, intervalMs })
+			body: JSON.stringify({ name: 'Standard', sites: DEFAULT_SITES, intervalMs, siteTrayEnabled })
 		});
 		playlists = [created.name];
 	}
@@ -284,13 +290,16 @@ async function loadCurrentPlaylist() {
 	inactivityMs = typeof pl.inactivityMs === 'number' && pl.inactivityMs >= 5000 ? pl.inactivityMs : 15000;
 	reloadPolicy = (pl.reloadPolicy === 'reload' || pl.reloadPolicy === 'cache') ? pl.reloadPolicy : 'cache';
 	countdownEnabled = typeof pl.countdownEnabled === 'boolean' ? pl.countdownEnabled : true;
+	siteTrayEnabled = typeof pl.siteTrayEnabled === 'boolean' ? pl.siteTrayEnabled : true;
 	intervalInput.value = Math.round(intervalMs / 1000);
 	inactivityInput.value = Math.round(inactivityMs / 1000);
 	reloadSelect.value = reloadPolicy;
 	const countdownEnabledInput = document.getElementById('countdown-enabled');
 	if (countdownEnabledInput) countdownEnabledInput.checked = !!countdownEnabled;
+	if (siteTrayToggle) siteTrayToggle.checked = !!siteTrayEnabled;
 	if (!countdownEnabled) stopCountdown();
 	renderPlaylistOptions(name);
+	renderSiteTray();
 	clientLog('info', 'playlist_loaded', { name, sites: sites.length, intervalMs, inactivityMs, reloadPolicy });
 }
 
@@ -341,7 +350,8 @@ async function createPlaylist() {
 			intervalMs,
 			inactivityMs,
 			reloadPolicy,
-			countdownEnabled
+			countdownEnabled,
+			siteTrayEnabled
 		});
 		newPlaylistNameInput.value = '';
 		// Reload list and select new one
@@ -443,6 +453,7 @@ function setIframeSrcSafe(url) {
 	const dur = getCurrentDurationMs();
 	nextSwitchAt = lastShownAt + dur;
 	startCountdown();
+	renderSiteTray();
 	clientLog('info', 'show_site', { index: currentIndex, url });
 }
 
@@ -678,6 +689,89 @@ function renderList() {
 		li.appendChild(controls);
 		siteList.appendChild(li);
 	});
+	renderSiteTray();
+}
+
+function getFaviconUrl(url) {
+	try {
+		const u = new URL(url);
+		return `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(u.origin)}&sz=64`;
+	} catch {
+		try {
+			return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(url)}&sz=64`;
+		} catch {
+			return '';
+		}
+	}
+}
+
+function getFallbackLabel(url) {
+	try {
+		const u = new URL(url);
+		return (u.hostname[0] || '?').toUpperCase();
+	} catch {
+		return (url.trim()[0] || '?').toUpperCase();
+	}
+}
+
+function renderSiteTray() {
+	if (!siteTray) return;
+	siteTray.innerHTML = '';
+	if (!siteTrayEnabled || !sites.length) {
+		siteTray.classList.add('hidden');
+		siteTray.classList.remove('visible');
+		return;
+	}
+	siteTray.classList.remove('hidden');
+	let activeBtn = null;
+	sites.forEach((_, index) => {
+		const entry = getSiteEntry(index);
+		if (!entry || !entry.url) return;
+		const btn = document.createElement('button');
+		btn.type = 'button';
+		btn.className = 'site-tray-item';
+		btn.setAttribute('data-index', String(index));
+		btn.setAttribute('title', entry.url);
+		btn.setAttribute('aria-label', entry.url);
+		const faviconUrl = getFaviconUrl(entry.url);
+		if (faviconUrl) {
+			const img = document.createElement('img');
+			img.src = faviconUrl;
+			img.alt = '';
+			img.loading = 'lazy';
+			img.referrerPolicy = 'no-referrer';
+			img.onerror = () => {
+				img.remove();
+				btn.classList.add('fallback');
+				btn.textContent = getFallbackLabel(entry.url);
+			};
+			btn.appendChild(img);
+		} else {
+			btn.classList.add('fallback');
+			btn.textContent = getFallbackLabel(entry.url);
+		}
+		if (index === currentIndex) {
+			btn.classList.add('active');
+			activeBtn = btn;
+		}
+		btn.addEventListener('click', () => {
+			currentIndex = index;
+			showCurrent();
+			clientLog('info', 'site_tray_click', { index, url: entry.url });
+		});
+		siteTray.appendChild(btn);
+	});
+	if (activeBtn) {
+		try {
+			activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+		} catch {
+			// scrollIntoView not supported
+		}
+	}
+	if (!siteTray.childElementCount) {
+		siteTray.classList.add('hidden');
+		siteTray.classList.remove('visible');
+	}
 }
 
 function addSiteFromInput() {
@@ -717,18 +811,27 @@ function manualShuffle() {
 
 // Hidden modal trigger: mouse wiggle or tap anywhere
 let showBtnTimeout = null;
-function onAnyActivity() {
+function onAnyActivity(event) {
 	settingsButton.classList.add('visible');
 	reloadButton.classList.add('visible');
 	urlIndicator.classList.add('visible');
 	arrowLeft.classList.add('visible');
 	arrowRight.classList.add('visible');
+	if (siteTray && siteTrayEnabled && !siteTray.classList.contains('hidden')) {
+		siteTray.classList.add('visible');
+	}
 	// If currently not within the no-pause buffer, pause on activity
-	const now = Date.now();
-	if (now >= noPauseUntilTs) {
+	const type = event?.type || '';
+	const target = event?.target;
+	const isPointerLike = type.startsWith('mouse') || type.startsWith('pointer') || type.startsWith('touch') || type === 'wheel';
+	const fromPauseIndicator = !!(pauseIndicator && target instanceof Node && pauseIndicator.contains(target));
+	if (isPointerLike && !fromPauseIndicator) {
 		setPaused(true);
 	} else {
-		// If in buffer and already paused/resumed state, just extend UI visibility
+		const now = Date.now();
+		if (now >= noPauseUntilTs) {
+			setPaused(true);
+		}
 	}
 	// If paused, activity should reset the auto-resume timer
 	if (isPaused) startAutoResumeTimer();
@@ -739,6 +842,7 @@ function onAnyActivity() {
 		urlIndicator.classList.remove('visible');
 		arrowLeft.classList.remove('visible');
 		arrowRight.classList.remove('visible');
+		if (siteTray) siteTray.classList.remove('visible');
 	}, 2500);
 }
 
@@ -758,7 +862,8 @@ async function savePlaylist() {
 		intervalMs,
 		inactivityMs,
 		reloadPolicy,
-		countdownEnabled
+		countdownEnabled,
+		siteTrayEnabled
 	};
 	await apiJson(`/api/playlists/${encodeURIComponent(currentPlaylist.name)}`, {
 		method: 'PUT',
@@ -894,6 +999,16 @@ if (gestureEdge) {
 		} else {
 			startCountdown();
 		}
+	});
+})();
+
+(() => {
+	if (!siteTrayToggle) return;
+	siteTrayToggle.addEventListener('change', () => {
+		siteTrayEnabled = !!siteTrayToggle.checked;
+		renderSiteTray();
+		savePlaylistDebounced();
+		clientLog('info', 'site_tray_toggle', { siteTrayEnabled });
 	});
 })();
 

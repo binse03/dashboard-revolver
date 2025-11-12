@@ -8,5 +8,6 @@
   "intervalMs": 10000,
   "inactivityMs": 15000,
   "reloadPolicy": "cache",
-  "countdownEnabled": true
+  "countdownEnabled": true,
+  "siteTrayEnabled": true
 }

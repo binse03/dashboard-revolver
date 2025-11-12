@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 app.use(express.json({ limit: '1mb' }));
 app.use(compression());
@@ -79,7 +79,7 @@ app.use((req, res, next) => {
 });
 
 // ---- Playlists API ----
-// A playlist file is JSON: { name: string, sites: string[], intervalMs?: number, inactivityMs?: number, reloadPolicy?: 'cache'|'reload', countdownEnabled?: boolean }
+// A playlist file is JSON: { name: string, sites: string[], intervalMs?: number, inactivityMs?: number, reloadPolicy?: 'cache'|'reload', countdownEnabled?: boolean, siteTrayEnabled?: boolean }
 
 function toSafeName(name) {
 	return String(name).trim().replace(/[^a-z0-9-_ ]/gi, '_');
@@ -114,7 +114,7 @@ app.get('/api/playlists/:name', async (req, res) => {
 });
 
 app.post('/api/playlists', async (req, res) => {
-	const { name, sites = [], intervalMs, inactivityMs, reloadPolicy, countdownEnabled } = req.body || {};
+	const { name, sites = [], intervalMs, inactivityMs, reloadPolicy, countdownEnabled, siteTrayEnabled } = req.body || {};
 	if (!name || typeof name !== 'string') return res.status(400).json({ error: 'Name required' });
 	const safe = toSafeName(name);
 	const p = playlistPath(safe);
@@ -128,7 +128,8 @@ app.post('/api/playlists', async (req, res) => {
 			...(typeof intervalMs === 'number' ? { intervalMs } : {}),
 			...(typeof inactivityMs === 'number' ? { inactivityMs } : {}),
 			...(reloadPolicy === 'cache' || reloadPolicy === 'reload' ? { reloadPolicy } : {}),
-			...(typeof countdownEnabled === 'boolean' ? { countdownEnabled } : {})
+			...(typeof countdownEnabled === 'boolean' ? { countdownEnabled } : {}),
+			...(typeof siteTrayEnabled === 'boolean' ? { siteTrayEnabled } : {})
 		};
 		await fsp.writeFile(p, JSON.stringify(data, null, 2), 'utf8');
 		logServer('playlists:create', { name: safe, sites: data.sites.length });
@@ -147,7 +148,7 @@ app.put('/api/playlists/:name', async (req, res) => {
 		if (!exists) return res.status(404).json({ error: 'Playlist not found' });
 		const file = await fsp.readFile(p, 'utf8');
 		const current = JSON.parse(file);
-		const { sites, intervalMs, inactivityMs, reloadPolicy, countdownEnabled } = req.body || {};
+		const { sites, intervalMs, inactivityMs, reloadPolicy, countdownEnabled, siteTrayEnabled } = req.body || {};
 		if (sites && !Array.isArray(sites)) return res.status(400).json({ error: 'sites must be array' });
 		const updated = {
 			...current,
@@ -155,7 +156,8 @@ app.put('/api/playlists/:name', async (req, res) => {
 			...(typeof intervalMs === 'number' ? { intervalMs } : {}),
 			...(typeof inactivityMs === 'number' ? { inactivityMs } : {}),
 			...((reloadPolicy === 'cache' || reloadPolicy === 'reload') ? { reloadPolicy } : {}),
-			...(typeof countdownEnabled === 'boolean' ? { countdownEnabled } : {})
+			...(typeof countdownEnabled === 'boolean' ? { countdownEnabled } : {}),
+			...(typeof siteTrayEnabled === 'boolean' ? { siteTrayEnabled } : {})
 		};
 		await fsp.writeFile(p, JSON.stringify(updated, null, 2), 'utf8');
 		logServer('playlists:update', { name, sites: updated.sites?.length || 0 });
